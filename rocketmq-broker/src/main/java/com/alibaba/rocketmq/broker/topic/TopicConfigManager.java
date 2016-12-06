@@ -131,6 +131,17 @@ public class TopicConfigManager extends ConfigManager {
             topicConfig.setWriteQueueNums(1);
             this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
         }
+        {
+            // MixAll.MSG_ACCUMULATION_NOTIFICATION
+            String topic = MixAll.MSG_ACCUMULATION_NOTIFICATION;
+            TopicConfig topicConfig = new TopicConfig(topic);
+            this.systemTopicList.add(topic);
+            topicConfig.setReadQueueNums(1);
+            topicConfig.setWriteQueueNums(1);
+            int perm = PermName.PERM_INHERIT | PermName.PERM_READ | PermName.PERM_WRITE;
+            topicConfig.setPerm(perm);
+            this.topicConfigTable.put(topicConfig.getTopicName(), topicConfig);
+        }
     }
 
 

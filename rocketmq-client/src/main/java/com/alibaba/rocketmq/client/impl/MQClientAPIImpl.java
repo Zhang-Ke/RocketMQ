@@ -229,7 +229,7 @@ public class MQClientAPIImpl {
                                   final int retryTimesWhenSendFailed, // 10
                                   final SendMessageContext context, // 11
                                   final DefaultMQProducerImpl producer // 12
-                                  ) throws RemotingException, MQBrokerException, InterruptedException {
+    ) throws RemotingException, MQBrokerException, InterruptedException {
         RemotingCommand request = null;
         if (sendSmartMsg) {
             SendMessageRequestHeaderV2 requestHeaderV2 = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV2(requestHeader);
@@ -564,7 +564,7 @@ public class MQClientAPIImpl {
         switch (response.getCode()) {
             case ResponseCode.SUCCESS: {
                 ByteBuffer byteBuffer = ByteBuffer.wrap(response.getBody());
-                MessageExt messageExt = MessageDecoder.clientDecode(byteBuffer,true);
+                MessageExt messageExt = MessageDecoder.clientDecode(byteBuffer, true);
                 return messageExt;
             }
             default:
@@ -1082,7 +1082,7 @@ public class MQClientAPIImpl {
         assert response != null;
         switch (response.getCode()) {
             case ResponseCode.SUCCESS: {
-                return MixAll.string2Properties(new String(response.getBody(),MixAll.DEFAULT_CHARSET));
+                return MixAll.string2Properties(new String(response.getBody(), MixAll.DEFAULT_CHARSET));
             }
             default:
                 break;
@@ -1925,6 +1925,40 @@ public class MQClientAPIImpl {
         switch (response.getCode()) {
             case ResponseCode.SUCCESS: {
                 return TopicConfigSerializeWrapper.decode(response.getBody(), TopicConfigSerializeWrapper.class);
+            }
+            default:
+                break;
+        }
+
+        throw new MQBrokerException(response.getCode(), response.getRemark());
+    }
+
+    public void setMsgAccumulationThreshold(MsgAccumulationThresholdHeader requestHeader, long timeoutMillis) throws InterruptedException, RemotingConnectException,
+            RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SET_MSG_ACCUMULATION_THRESHOLD, requestHeader);
+
+        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
+        assert response != null;
+        switch (response.getCode()) {
+            case ResponseCode.SUCCESS: {
+                return;
+            }
+            default:
+                break;
+        }
+
+        throw new MQBrokerException(response.getCode(), response.getRemark());
+    }
+
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(long timeoutMillis) throws InterruptedException, RemotingConnectException,
+            RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_MSG_ACCUMULATION_THRESHOLDS, null);
+
+        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
+        assert response != null;
+        switch (response.getCode()) {
+            case ResponseCode.SUCCESS: {
+                return RemotingSerializable.decode(response.getBody(), MsgAccumulationThresholdWrapper.class);
             }
             default:
                 break;

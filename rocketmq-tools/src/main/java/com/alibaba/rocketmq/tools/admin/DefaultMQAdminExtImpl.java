@@ -33,6 +33,7 @@ import com.alibaba.rocketmq.common.message.*;
 import com.alibaba.rocketmq.common.namesrv.NamesrvUtil;
 import com.alibaba.rocketmq.common.protocol.ResponseCode;
 import com.alibaba.rocketmq.common.protocol.body.*;
+import com.alibaba.rocketmq.common.protocol.header.MsgAccumulationThresholdHeader;
 import com.alibaba.rocketmq.common.protocol.header.UpdateConsumerOffsetRequestHeader;
 import com.alibaba.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import com.alibaba.rocketmq.common.protocol.route.BrokerData;
@@ -909,5 +910,18 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
         requestHeader.setQueueId(mq.getQueueId());
         requestHeader.setCommitOffset(offset);
         this.mqClientInstance.getMQClientAPIImpl().updateConsumerOffset(brokerAddr, requestHeader, timeoutMillis);
+    }
+
+    @Override
+    public void setMsgAccumulationThreshold(String consumerGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        MsgAccumulationThresholdHeader requestHeader = new MsgAccumulationThresholdHeader();
+        requestHeader.setConsumerGroup(consumerGroup);
+        requestHeader.setThreshold(threshold);
+        this.mqClientInstance.getMQClientAPIImpl().setMsgAccumulationThreshold(requestHeader, timeoutMillis);
+    }
+
+    @Override
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds() throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        return this.mqClientInstance.getMQClientAPIImpl().getAllMsgAccumulationThresholds(timeoutMillis);
     }
 }

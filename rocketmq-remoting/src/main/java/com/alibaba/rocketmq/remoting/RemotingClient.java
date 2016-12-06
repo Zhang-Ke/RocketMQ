@@ -22,6 +22,7 @@ import com.alibaba.rocketmq.remoting.exception.RemotingTimeoutException;
 import com.alibaba.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 import com.alibaba.rocketmq.remoting.netty.NettyRequestProcessor;
 import com.alibaba.rocketmq.remoting.protocol.RemotingCommand;
+import io.netty.channel.Channel;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -59,4 +60,6 @@ public interface RemotingClient extends RemotingService {
 
 
     public boolean isChannelWriteable(final String addr);
+
+    public Channel getChannel(final String addr);
 }

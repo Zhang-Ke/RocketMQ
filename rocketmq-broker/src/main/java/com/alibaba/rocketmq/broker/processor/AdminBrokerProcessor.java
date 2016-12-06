@@ -55,6 +55,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -182,6 +183,11 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
 
             case RequestCode.GET_BROKER_CONSUME_STATS:
                 return fetchAllConsumeStatsInBroker(ctx, request);
+
+            case RequestCode.SET_MSG_ACCUMULATION_THRESHOLD:
+                return setMsgAccumulationThreshold(ctx, request);
+            case RequestCode.GET_ALL_MSG_ACCUMULATION_THRESHOLDS:
+                return getAllMsgAccumulationThresholds(ctx, request);
             default:
                 break;
         }
@@ -932,7 +938,7 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                 this.brokerController.getConsumerOffsetManager().queryOffset(requestHeader.getTopic(), requestHeader.getCompareGroup());
 
         if (compareOffset != null && !compareOffset.isEmpty()) {
-            for(Map.Entry<Integer, Long> entry: compareOffset.entrySet()){
+            for (Map.Entry<Integer, Long> entry : compareOffset.entrySet()) {
                 Integer queueId = entry.getKey();
                 correctionOffset.put(queueId,
                         correctionOffset.get(queueId) > entry.getValue() ? Long.MAX_VALUE : correctionOffset.get(queueId));
@@ -1231,6 +1237,37 @@ public class AdminBrokerProcessor implements NettyRequestProcessor {
                     String.format("invoke consumer <%s> <%s> Exception: %s", consumerGroup, clientId, RemotingHelper.exceptionSimpleDesc(e)));
             return response;
         }
+    }
+
+    private RemotingCommand setMsgAccumulationThreshold(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
+        RemotingCommand response = RemotingCommand.createResponseCommand(null);
+
+        MsgAccumulationThresholdHeader requestHeader = (MsgAccumulationThresholdHeader) request.decodeCommandCustomHeader(MsgAccumulationThresholdHeader.class);
+        try {
+            this.brokerController.getMonitorManager().setMsgAccumulationThreshold(
+                    requestHeader.getTopic(),
+                    requestHeader.getConsumerGroup(),
+                    requestHeader.getThreshold()
+            );
+            response.setCode(ResponseCode.SUCCESS);
+            response.setRemark(null);
+        } catch (IOException e) {
+            response.setCode(ResponseCode.SYSTEM_ERROR);
+            response.setRemark(String.format("error when setting queue message accumulation threshold. Exception: %s", RemotingHelper.exceptionSimpleDesc(e)));
+        }
+
+        return response;
+    }
+
+    private RemotingCommand getAllMsgAccumulationThresholds(ChannelHandlerContext ctx, RemotingCommand request) {
+        RemotingCommand response = RemotingCommand.createResponseCommand(null);
+
+        MsgAccumulationThresholdWrapper wrapper = this.brokerController.getMonitorManager().queryAllMsgAccumulationThresholds();
+        response.setCode(ResponseCode.SUCCESS);
+        response.setBody(wrapper.encode());
+        response.setRemark(null);
+
+        return response;
     }
 
 }

@@ -24,7 +24,9 @@ import com.alibaba.rocketmq.broker.latency.BrokerFastFailure;
 import com.alibaba.rocketmq.broker.latency.BrokerFixedThreadPoolExecutor;
 import com.alibaba.rocketmq.broker.longpolling.NotifyMessageArrivingListener;
 import com.alibaba.rocketmq.broker.longpolling.PullRequestHoldService;
+import com.alibaba.rocketmq.broker.monitor.MonitorManager;
 import com.alibaba.rocketmq.broker.mqtrace.ConsumeMessageHook;
+import com.alibaba.rocketmq.broker.monitor.MsgAccumulationCheckHook;
 import com.alibaba.rocketmq.broker.mqtrace.SendMessageHook;
 import com.alibaba.rocketmq.broker.offset.ConsumerOffsetManager;
 import com.alibaba.rocketmq.broker.out.BrokerOuterAPI;
@@ -105,6 +107,7 @@ public class BrokerController {
     private BrokerStats brokerStats;
     private InetSocketAddress storeHost;
     private BrokerFastFailure brokerFastFailure;
+    private MonitorManager monitorManager;
 
     public BrokerController(//
                             final BrokerConfig brokerConfig, //
@@ -145,6 +148,11 @@ public class BrokerController {
         this.setStoreHost(new InetSocketAddress(this.getBrokerConfig().getBrokerIP1(), this.getNettyServerConfig().getListenPort()));
 
         this.brokerFastFailure = new BrokerFastFailure(this);
+
+        this.monitorManager = new MonitorManager(this);
+
+        MsgAccumulationCheckHook msgAccumulationCheckHook = new MsgAccumulationCheckHook(this);
+        registerSendMessageHook(msgAccumulationCheckHook);
     }
 
     public BrokerConfig getBrokerConfig() {
@@ -262,7 +270,7 @@ public class BrokerController {
                         log.error("printWaterMark error.", e);
                     }
                 }
-            }, 10, 1, TimeUnit.SECONDS);
+            }, 10, 1, TimeUnit.MINUTES);
 
             this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
@@ -804,5 +812,9 @@ public class BrokerController {
 
     public void setStoreHost(InetSocketAddress storeHost) {
         this.storeHost = storeHost;
+    }
+
+    public MonitorManager getMonitorManager() {
+        return monitorManager;
     }
 }

@@ -151,7 +151,7 @@ public class DefaultMQAdminExt extends ClientConfig implements MQAdminExt {
 
     @Override
     public Properties getBrokerConfig(final String brokerAddr) throws RemotingConnectException,
-            RemotingSendRequestException, RemotingTimeoutException, UnsupportedEncodingException, InterruptedException, MQBrokerException{
+            RemotingSendRequestException, RemotingTimeoutException, UnsupportedEncodingException, InterruptedException, MQBrokerException {
         return defaultMQAdminExtImpl.getBrokerConfig(brokerAddr);
     }
 
@@ -189,7 +189,7 @@ public class DefaultMQAdminExt extends ClientConfig implements MQAdminExt {
     }
 
     @Override
-    public TopicList fetchTopicsByCLuster(String clusterName) throws RemotingException, MQClientException, InterruptedException{
+    public TopicList fetchTopicsByCLuster(String clusterName) throws RemotingException, MQClientException, InterruptedException {
         return this.defaultMQAdminExtImpl.fetchTopicsByCLuster(clusterName);
     }
 
@@ -453,5 +453,15 @@ public class DefaultMQAdminExt extends ClientConfig implements MQAdminExt {
     @Override
     public void updateConsumeOffset(String brokerAddr, String consumeGroup, MessageQueue mq, long offset) throws RemotingException, InterruptedException, MQBrokerException {
         this.defaultMQAdminExtImpl.updateConsumeOffset(brokerAddr, consumeGroup, mq, offset);
+    }
+
+    @Override
+    public void setMsgAccumulationThreshold(String consumeGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        this.defaultMQAdminExtImpl.setMsgAccumulationThreshold(consumeGroup, threshold);
+    }
+
+    @Override
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds() throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        return this.defaultMQAdminExtImpl.getAllMsgAccumulationThresholds();
     }
 }

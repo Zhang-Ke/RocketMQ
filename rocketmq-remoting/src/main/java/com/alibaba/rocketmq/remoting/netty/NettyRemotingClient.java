@@ -135,15 +135,15 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         Bootstrap handler = this.bootstrap.group(this.eventLoopGroupWorker).channel(NioSocketChannel.class)//
                 //
                 .option(ChannelOption.TCP_NODELAY, true)
-                //
+                        //
                 .option(ChannelOption.SO_KEEPALIVE, false)
-                //
+                        //
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, nettyClientConfig.getConnectTimeoutMillis())
-                //
+                        //
                 .option(ChannelOption.SO_SNDBUF, nettyClientConfig.getClientSocketSndBufSize())
-                //
+                        //
                 .option(ChannelOption.SO_RCVBUF, nettyClientConfig.getClientSocketRcvBufSize())
-                //
+                        //
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -361,7 +361,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
         }
     }
 
-    private Channel getAndCreateChannel(final String addr) throws InterruptedException {
+    public Channel getAndCreateChannel(final String addr) throws InterruptedException {
         if (null == addr)
             return getAndCreateNameserverChannel();
 
@@ -433,19 +433,13 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
 
                     if (cw.isOK()) {
                         return cw.getChannel();
-                    }
-
-                    else if (!cw.getChannelFuture().isDone()) {
+                    } else if (!cw.getChannelFuture().isDone()) {
                         createNewConnection = false;
-                    }
-
-                    else {
+                    } else {
                         this.channelTables.remove(addr);
                         createNewConnection = true;
                     }
-                }
-
-                else {
+                } else {
                     createNewConnection = true;
                 }
 
@@ -546,6 +540,15 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     }
 
     @Override
+    public Channel getChannel(String addr) {
+        ChannelWrapper cw = this.channelTables.get(addr);
+        if (cw != null && cw.isOK()) {
+            return cw.getChannel();
+        }
+        return null;
+    }
+
+    @Override
     public ChannelEventListener getChannelEventListener() {
         return channelEventListener;
     }
@@ -567,6 +570,7 @@ public class NettyRemotingClient extends NettyRemotingAbstract implements Remoti
     public RPCHook getRpcHook() {
         return rpcHook;
     }
+
 
     static class ChannelWrapper {
         private final ChannelFuture channelFuture;

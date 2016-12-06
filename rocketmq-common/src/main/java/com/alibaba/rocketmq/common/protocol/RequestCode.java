@@ -154,4 +154,8 @@ public class RequestCode {
 
     public static final int GET_BROKER_CONSUME_STATS = 317;
 
+    public static final int SET_MSG_ACCUMULATION_THRESHOLD = 801;
+
+    public static final int GET_ALL_MSG_ACCUMULATION_THRESHOLDS = 802;
+
 }
