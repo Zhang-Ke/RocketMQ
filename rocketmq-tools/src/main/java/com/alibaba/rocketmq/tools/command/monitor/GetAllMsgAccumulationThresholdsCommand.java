@@ -16,6 +16,8 @@
  */
 package com.alibaba.rocketmq.tools.command.monitor;
 
+import com.alibaba.rocketmq.common.admin.MsgAccumulationThreshold;
+import com.alibaba.rocketmq.common.protocol.body.MsgAccumulationThresholdWrapper;
 import com.alibaba.rocketmq.remoting.RPCHook;
 import com.alibaba.rocketmq.tools.admin.DefaultMQAdminExt;
 import com.alibaba.rocketmq.tools.command.CommandUtil;
@@ -24,41 +26,30 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
+import java.util.List;
 import java.util.Set;
 
 
 /**
  * @author zhangke
  */
-public class SetMsgAccumulationThresholdCommand implements SubCommand {
+public class GetAllMsgAccumulationThresholdsCommand implements SubCommand {
 
     @Override
     public String commandName() {
-        return "setMsgAccumulationThreshold";
+        return "getAllMsgAccumulationThresholds";
     }
 
 
     @Override
     public String commandDesc() {
-        return "Set message accumulation threshold used for monitor";
+        return "Get all message accumulation thresholds";
     }
 
 
     @Override
     public Options buildCommandlineOptions(Options options) {
-        Option opt = new Option("g", "consumerGroup", true, "consumer group name");
-        opt.setRequired(true);
-        options.addOption(opt);
-
-        opt = new Option("t", "topic", true, "topic name");
-        opt.setRequired(true);
-        options.addOption(opt);
-
-        opt = new Option("v", "threshold", true, "threshold of message accumulation");
-        opt.setRequired(true);
-        options.addOption(opt);
-
-        opt = new Option("c", "clusterName", true, "set message accumulation to which cluster");
+        Option opt = new Option("c", "clusterName", true, "which cluster to get");
         opt.setRequired(true);
         options.addOption(opt);
 
@@ -71,16 +62,25 @@ public class SetMsgAccumulationThresholdCommand implements SubCommand {
         defaultMQAdminExt.setInstanceName(Long.toString(System.currentTimeMillis()));
         try {
             defaultMQAdminExt.start();
-            String topic = commandLine.getOptionValue("t").trim();
-            String consumerGroup = commandLine.getOptionValue("g").trim();
-            long threshold = Long.parseLong(commandLine.getOptionValue("v").trim());
             String clusterName = commandLine.getOptionValue("c").trim();
 
             Set<String> masterSet =
                     CommandUtil.fetchMasterAddrByClusterName(defaultMQAdminExt, clusterName);
-            for (String addr : masterSet) {
-                defaultMQAdminExt.setMsgAccumulationThreshold(addr,topic, consumerGroup, threshold);
-                System.out.printf("set message accumulation threshold to %s success.%n", addr);
+            MsgAccumulationThresholdWrapper wrapper = defaultMQAdminExt.getAllMsgAccumulationThresholds(masterSet.iterator().next());
+            List<MsgAccumulationThreshold> thresholds = wrapper.getThresholds();
+            System.out.printf("%-50s  %-30s  %-15s  %n",//
+                    "topic",//
+                    "consumerGroup",//
+                    "threshold");
+            if (!thresholds.isEmpty()) {
+                for (MsgAccumulationThreshold t : thresholds) {
+                    System.out.printf("%-50s  %-30s  %-15d  %n",//
+                            t.getTopic(),//
+                            t.getConsumerGroup(),//
+                            t.getThreshold());
+                }
+            } else {
+                System.out.println("Haven't set any threshold of message accumulation yet ");
             }
 
         } catch (Exception e) {

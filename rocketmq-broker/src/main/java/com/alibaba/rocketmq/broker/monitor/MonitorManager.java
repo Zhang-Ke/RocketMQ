@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +43,11 @@ public class MonitorManager {
 
     private static final Logger log = LoggerFactory.getLogger(LoggerName.MonitorLoggerName);
 
-    private static final String MONITOR_DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "monitor";
+    private String fileDirectory;
 
-    private static final String MESSAGE_ACCUMULATION_CONFIG_FILE_PATH = MONITOR_DIRECTORY_PATH + File.separator + "message-accumulation.json";
+    private final String MSG_ACCUMULATION_FILE_NAME = "message-accumulation.json";
 
-    private static final String KEY_SEPARATOR = "@";
+    private final String KEY_SEPARATOR = "@";
 
     private ConcurrentMap<String /* topic@group */, Long> thresholdTable = new ConcurrentHashMap();
 
@@ -66,11 +67,8 @@ public class MonitorManager {
     }
 
     private void init() {
-        File dir = new File(MONITOR_DIRECTORY_PATH);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        configFile = new File(MESSAGE_ACCUMULATION_CONFIG_FILE_PATH);
+        this.fileDirectory = brokerController.getMessageStoreConfig().getStorePathRootDir();
+        configFile = new File(this.fileDirectory + File.separator + this.MSG_ACCUMULATION_FILE_NAME);
         if (!configFile.exists()) {
             try {
                 configFile.createNewFile();
@@ -79,7 +77,7 @@ public class MonitorManager {
             }
         }
 
-        String content = MixAll.file2String(MESSAGE_ACCUMULATION_CONFIG_FILE_PATH);
+        String content = MixAll.file2String(configFile);
         if (content != null && content.length() != 0) {
             List<MsgAccumulationThreshold> dataList = JSON.parseArray(content, MsgAccumulationThreshold.class);
             for (MsgAccumulationThreshold data : dataList) {
@@ -93,8 +91,11 @@ public class MonitorManager {
     }
 
     public synchronized void setMsgAccumulationThreshold(String topic, String consumerGroup, final long msgAccumulationThreshold) throws IOException {
-        String content = MixAll.file2String(MESSAGE_ACCUMULATION_CONFIG_FILE_PATH);
+        String content = MixAll.file2String(configFile);
         List<MsgAccumulationThreshold> dataList = JSON.parseArray(content, MsgAccumulationThreshold.class);
+        if (dataList == null) {
+            dataList = new ArrayList();
+        }
 
         boolean updated = false;
         for (MsgAccumulationThreshold data : dataList) {
@@ -107,7 +108,7 @@ public class MonitorManager {
             dataList.add(new MsgAccumulationThreshold(topic, consumerGroup, msgAccumulationThreshold));
         }
 
-        MixAll.string2File(JSON.toJSONString(dataList), MESSAGE_ACCUMULATION_CONFIG_FILE_PATH);
+        MixAll.string2File(JSON.toJSONString(dataList), configFile.getAbsolutePath());
 
         thresholdTable.put(getKey(topic, consumerGroup), msgAccumulationThreshold);
     }

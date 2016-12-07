@@ -228,7 +228,7 @@ public interface MQAdminExt extends MQAdmin {
 
     void updateConsumeOffset(String brokerAddr, String consumeGroup, MessageQueue mq, long offset) throws RemotingException, InterruptedException, MQBrokerException;
 
-    void setMsgAccumulationThreshold(String consumeGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException;
+    void setMsgAccumulationThreshold(String brokerAddr, String topic, String consumeGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException;
 
-    MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds() throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException;
+    MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(String brokerAddr) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException;
 }

@@ -27,8 +27,8 @@ import java.util.Set;
 
 /**
  *
+ * @author zhangke
  *
- * @author 张轲
  */
 public class MsgAccumulationCheckHookTest {
 

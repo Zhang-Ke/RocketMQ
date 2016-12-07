@@ -1933,11 +1933,11 @@ public class MQClientAPIImpl {
         throw new MQBrokerException(response.getCode(), response.getRemark());
     }
 
-    public void setMsgAccumulationThreshold(MsgAccumulationThresholdHeader requestHeader, long timeoutMillis) throws InterruptedException, RemotingConnectException,
+    public void setMsgAccumulationThreshold(String addr, MsgAccumulationThresholdHeader requestHeader, long timeoutMillis) throws InterruptedException, RemotingConnectException,
             RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.SET_MSG_ACCUMULATION_THRESHOLD, requestHeader);
 
-        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
+        RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         assert response != null;
         switch (response.getCode()) {
             case ResponseCode.SUCCESS: {
@@ -1950,11 +1950,11 @@ public class MQClientAPIImpl {
         throw new MQBrokerException(response.getCode(), response.getRemark());
     }
 
-    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(long timeoutMillis) throws InterruptedException, RemotingConnectException,
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(String addr, long timeoutMillis) throws InterruptedException, RemotingConnectException,
             RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
         RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.GET_ALL_MSG_ACCUMULATION_THRESHOLDS, null);
 
-        RemotingCommand response = this.remotingClient.invokeSync(null, request, timeoutMillis);
+        RemotingCommand response = this.remotingClient.invokeSync(addr, request, timeoutMillis);
         assert response != null;
         switch (response.getCode()) {
             case ResponseCode.SUCCESS: {

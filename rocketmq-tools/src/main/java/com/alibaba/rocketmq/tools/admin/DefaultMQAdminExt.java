@@ -456,12 +456,12 @@ public class DefaultMQAdminExt extends ClientConfig implements MQAdminExt {
     }
 
     @Override
-    public void setMsgAccumulationThreshold(String consumeGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
-        this.defaultMQAdminExtImpl.setMsgAccumulationThreshold(consumeGroup, threshold);
+    public void setMsgAccumulationThreshold(String brokerAddr, String topic, String consumeGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        this.defaultMQAdminExtImpl.setMsgAccumulationThreshold(brokerAddr, topic, consumeGroup, threshold);
     }
 
     @Override
-    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds() throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
-        return this.defaultMQAdminExtImpl.getAllMsgAccumulationThresholds();
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(String brokerAddr) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        return this.defaultMQAdminExtImpl.getAllMsgAccumulationThresholds(brokerAddr);
     }
 }

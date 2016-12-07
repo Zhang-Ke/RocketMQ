@@ -913,15 +913,16 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
     }
 
     @Override
-    public void setMsgAccumulationThreshold(String consumerGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+    public void setMsgAccumulationThreshold(String brokerAddr, String topic, String consumerGroup, long threshold) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
         MsgAccumulationThresholdHeader requestHeader = new MsgAccumulationThresholdHeader();
+        requestHeader.setTopic(topic);
         requestHeader.setConsumerGroup(consumerGroup);
         requestHeader.setThreshold(threshold);
-        this.mqClientInstance.getMQClientAPIImpl().setMsgAccumulationThreshold(requestHeader, timeoutMillis);
+        this.mqClientInstance.getMQClientAPIImpl().setMsgAccumulationThreshold(brokerAddr, requestHeader, timeoutMillis);
     }
 
     @Override
-    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds() throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
-        return this.mqClientInstance.getMQClientAPIImpl().getAllMsgAccumulationThresholds(timeoutMillis);
+    public MsgAccumulationThresholdWrapper getAllMsgAccumulationThresholds(String brokerAddr) throws InterruptedException, RemotingConnectException, RemotingSendRequestException, RemotingTimeoutException, MQBrokerException {
+        return this.mqClientInstance.getMQClientAPIImpl().getAllMsgAccumulationThresholds(brokerAddr, timeoutMillis);
     }
 }

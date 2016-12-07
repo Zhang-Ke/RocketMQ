@@ -31,6 +31,8 @@ import com.alibaba.rocketmq.tools.command.connection.ConsumerConnectionSubComman
 import com.alibaba.rocketmq.tools.command.connection.ProducerConnectionSubCommand;
 import com.alibaba.rocketmq.tools.command.consumer.*;
 import com.alibaba.rocketmq.tools.command.message.*;
+import com.alibaba.rocketmq.tools.command.monitor.GetAllMsgAccumulationThresholdsCommand;
+import com.alibaba.rocketmq.tools.command.monitor.SetMsgAccumulationThresholdCommand;
 import com.alibaba.rocketmq.tools.command.namesrv.DeleteKvConfigCommand;
 import com.alibaba.rocketmq.tools.command.namesrv.UpdateKvConfigCommand;
 import com.alibaba.rocketmq.tools.command.namesrv.WipeWritePermSubCommand;
@@ -169,6 +171,9 @@ public class MQAdminStartup {
 
         initCommand(new CheckMsgSendRTCommand());
         initCommand(new CLusterSendMsgRTCommand());
+
+        initCommand(new SetMsgAccumulationThresholdCommand());
+        initCommand(new GetAllMsgAccumulationThresholdsCommand());
 
     }
 
