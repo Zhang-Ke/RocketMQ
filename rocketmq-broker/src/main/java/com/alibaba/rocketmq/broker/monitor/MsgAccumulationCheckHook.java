@@ -47,6 +47,10 @@ public class MsgAccumulationCheckHook implements SendMessageHook {
 
     private int checkInterval = 1000 * 60;
 
+    private int notifyInterval = 1000 * 60 * 30;
+
+    private final ConcurrentMap<String /* topic */, Long> notifyTimeMap = new ConcurrentHashMap();
+
     private final SocketAddress host;
 
     private ExecutorService executor;
@@ -78,13 +82,21 @@ public class MsgAccumulationCheckHook implements SendMessageHook {
     public void sendMessageAfter(SendMessageContext context) {
         String topic = context.getTopic();
 
-        Long lastCheckTime = checkTimeMap.get(topic);
-        if (lastCheckTime == null) {
-            checkTimeMap.putIfAbsent(topic, System.currentTimeMillis());
+        if (!checkTimeMap.containsKey(topic)) {
+            checkTimeMap.putIfAbsent(topic, 0l);
         }
 
-        if (lastCheckTime == null || System.currentTimeMillis() - lastCheckTime > checkInterval) {
-            executor.submit(new CheckRequest(topic));
+        final long now = System.currentTimeMillis();
+        Long lastCheckTime = checkTimeMap.get(topic);
+        if (now - lastCheckTime > checkInterval) {
+            synchronized (lastCheckTime) {
+                if (lastCheckTime != checkTimeMap.get(topic)) {
+                    return;
+                }
+                log.info("Check message accumulation for topic {}", topic);
+                executor.submit(new CheckRequest(topic));
+                checkTimeMap.put(topic, now);
+            }
         }
     }
 
@@ -98,7 +110,20 @@ public class MsgAccumulationCheckHook implements SendMessageHook {
 
             final long gap = maxOffset - commitOffset;
             if (gap > accumulationThreshold) {
-                putNotificationMessage(topic, group, queueId, gap);
+                if (!notifyTimeMap.containsKey(topic)) {
+                    notifyTimeMap.putIfAbsent(topic, 0l);
+                }
+                Long now = System.currentTimeMillis();
+                Long lastNotifyTime = notifyTimeMap.get(topic);
+                if (now - lastNotifyTime > notifyInterval) {
+                    synchronized (lastNotifyTime) {
+                        if (lastNotifyTime != notifyTimeMap.get(topic)) {
+                            return;
+                        }
+                        putNotificationMessage(topic, group, queueId, gap);
+                        notifyTimeMap.put(topic, now);
+                    }
+                }
             }
         }
     }
@@ -118,7 +143,7 @@ public class MsgAccumulationCheckHook implements SendMessageHook {
         inner.setPropertiesString("");
         String key = UUID.randomUUID().toString();
         inner.setKeys(key);
-        log.info("put alarm message[topic={},group={},queueId={},gap={}] with key: {}",
+        log.info("Messages have been accumulated.Send alarm message[topic={},group={},queueId={},gap={}] with key: {}",
                 topic, group, queueId, gap, key);
         this.brokerController.getMessageStore().putMessage(inner);
     }
